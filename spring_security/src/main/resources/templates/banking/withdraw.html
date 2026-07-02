@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Withdraw | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/banking/customers">Customers</a>
+        <a href="/banking/accounts">Accounts</a>
+        <a href="/banking/transactions">Transactions</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2>💸 Withdraw Money</h2>
+            <p>Withdraw funds from a bank account</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="/banking/accounts" class="btn btn-secondary">
+                ← Back to Accounts
+            </a>
+        </div>
+    </div>
+
+    <div class="card" style="max-width: 480px;">
+
+        <div th:if="${errorMessage}" class="alert alert-error">
+            ⚠️ <span th:text="${errorMessage}"></span>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success">
+            ✅ <span th:text="${successMessage}"></span>
+        </div>
+
+        <form th:action="@{/banking/transactions/withdraw}" method="post">
+
+            <div class="form-group">
+                <label>Account Number</label>
+                <input type="number" name="accountNumber"
+                       placeholder="Enter account number" required/>
+            </div>
+
+            <div class="form-group">
+                <label>Amount (₹)</label>
+                <input type="number" name="amount"
+                       placeholder="Enter amount to withdraw"
+                       step="0.01" min="1" required/>
+            </div>
+
+            <div class="alert alert-info">
+                ℹ️ Make sure the account has sufficient balance before withdrawing.
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:8px;">
+                <button type="submit" class="btn btn-danger"
+                        style="flex:1; padding:14px;">
+                    💸 Withdraw Now
+                </button>
+                <a href="/banking/accounts" class="btn btn-secondary">
+                    Cancel
+                </a>
+            </div>
+
+        </form>
+    </div>
+
+</div>
+</body>
+</html>

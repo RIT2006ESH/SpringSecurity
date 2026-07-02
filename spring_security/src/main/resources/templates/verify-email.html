@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verify Email | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="auth-wrapper">
+    <div class="auth-card">
+
+        <div class="auth-logo">
+            <h1>🏦 SecureBank</h1>
+            <p>Email Verification</p>
+        </div>
+
+        <div th:if="${successMessage}" class="alert alert-success">
+            ✅ <span th:text="${successMessage}"></span>
+            <br/><br/>
+            <a href="/login" class="btn btn-primary">Go to Login →</a>
+        </div>
+
+        <div th:if="${errorMessage}" class="alert alert-error">
+            ⚠️ <span th:text="${errorMessage}"></span>
+            <br/><br/>
+            <a href="/register" class="btn btn-secondary">Register Again</a>
+        </div>
+
+        <div th:if="${email}" style="text-align:center;">
+            <div style="font-size:64px; margin-bottom:16px;">📧</div>
+            <h2 style="margin-bottom:8px;">Check your inbox</h2>
+            <p style="color:#5f6368; margin-bottom:24px;">
+                We sent a verification link to<br/>
+                <strong th:text="${email}"></strong>
+            </p>
+            <p style="color:#5f6368; font-size:13px;">
+                Click the link in the email to verify your account.<br/>
+                The link expires in 24 hours.
+            </p>
+            <br/>
+            <a href="/login" style="color:#1a73e8; font-size:14px;">
+                Already verified? Sign in →
+            </a>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

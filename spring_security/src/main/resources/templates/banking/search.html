@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">🏦 <span>SecureBank</span></a>
+    <div class="navbar-links">
+        <a href="/banking/customers">Customers</a>
+        <a href="/banking/accounts">Accounts</a>
+        <a href="/banking/search">Search</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2>🔍 Search</h2>
+            <p>Search by Customer ID, Account Number or Mobile Number</p>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card" style="margin-bottom: 28px;">
+        <form th:action="@{/banking/search}" method="get">
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Search Type</label>
+                    <select name="type">
+                        <option value="customer_id"
+                                th:selected="${type == 'customer_id'}">
+                            Customer ID
+                        </option>
+                        <option value="account_number"
+                                th:selected="${type == 'account_number'}">
+                            Account Number
+                        </option>
+                        <option value="mobile"
+                                th:selected="${type == 'mobile'}">
+                            Mobile Number
+                        </option>
+                        <option value="general"
+                                th:selected="${type == 'general'}">
+                            General Search
+                        </option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Search Keyword</label>
+                    <input type="text" name="keyword"
+                           th:value="${keyword}"
+                           placeholder="Enter search term" required/>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary"
+                    style="width: auto; padding: 12px 32px;">
+                🔍 Search
+            </button>
+        </form>
+    </div>
+
+    <!-- Error Message -->
+    <div th:if="${errorMessage}" class="alert alert-error">
+        ⚠️ <span th:text="${errorMessage}"></span>
+    </div>
+
+    <!-- Customer Results -->
+    <div th:if="${customers != null and !#lists.isEmpty(customers)}">
+        <div class="page-header">
+            <div>
+                <h2>👥 Customer Results</h2>
+                <p th:text="'Found ' + ${#lists.size(customers)} +
+                    ' customer(s)'"></p>
+            </div>
+        </div>
+
+        <div class="table-wrapper" style="margin-bottom: 28px;">
+            <table>
+                <thead>
+                <tr>
+                    <th>Customer ID</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>DOB</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="customer : ${customers}">
+                    <td th:text="${customer.customerId}"></td>
+                    <td th:text="${customer.firstName + ' ' +
+                            customer.lastName}"></td>
+                    <td th:text="${customer.email}"></td>
+                    <td th:text="${customer.phone}"></td>
+                    <td th:text="${customer.dob}"></td>
+                    <td>
+                        <a th:href="@{/banking/customers/{id}
+                                (id=${customer.customerId})}"
+                           class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Account Results -->
+    <div th:if="${accounts != null and !#lists.isEmpty(accounts)}">
+        <div class="page-header">
+            <div>
+                <h2>🏦 Account Results</h2>
+                <p th:text="'Found ' + ${#lists.size(accounts)} +
+                    ' account(s)'"></p>
+            </div>
+        </div>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Customer ID</th>
+                    <th>Type</th>
+                    <th>Balance</th>
+                    <th>Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="account : ${accounts}">
+                    <td th:text="${account.accountNumber}"></td>
+                    <td th:text="${account.customerId}"></td>
+                    <td>
+                            <span class="badge badge-info"
+                                  th:text="${account.accountType}"></span>
+                    </td>
+                    <td>
+                        <strong style="color:#137333;">
+                            ₹<span th:text="${account.balance}"></span>
+                        </strong>
+                    </td>
+                    <td>
+                        <a th:href="@{/banking/accounts/{id}
+                                (id=${account.accountNumber})}"
+                           class="btn btn-secondary btn-sm">View</a>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- No Results -->
+    <div th:if="${keyword != null and
+                  (customers == null or #lists.isEmpty(customers)) and
+                  (accounts == null or #lists.isEmpty(accounts)) and
+                  errorMessage == null}">
+        <div class="alert alert-info">
+            ℹ️ No results found for "<strong
+                th:text="${keyword}"></strong>"
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

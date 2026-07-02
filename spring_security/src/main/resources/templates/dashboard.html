@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/banking/customers">Customers</a>
+        <a href="/banking/accounts">Accounts</a>
+        <a href="/banking/transactions">Transactions</a>
+        <a href="/banking/search">Search</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2>Welcome to SecureBank 👋</h2>
+        <p>Manage your customers, accounts, and transactions all in one place.</p>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="dashboard-grid">
+
+        <a href="/banking/customers" class="dashboard-card">
+            <span class="card-emoji">👥</span>
+            <h3>Customers</h3>
+            <p>View and manage all bank customers</p>
+            <span class="btn btn-primary btn-sm">View Customers</span>
+        </a>
+
+        <a href="/banking/accounts" class="dashboard-card">
+            <span class="card-emoji">🏦</span>
+            <h3>Accounts</h3>
+            <p>Manage savings and current accounts</p>
+            <span class="btn btn-primary btn-sm">View Accounts</span>
+        </a>
+
+        <a href="/banking/transactions" class="dashboard-card">
+            <span class="card-emoji">💳</span>
+            <h3>Transactions</h3>
+            <p>View all transaction history</p>
+            <span class="btn btn-primary btn-sm">View Transactions</span>
+        </a>
+
+        <a href="/banking/transactions/deposit" class="dashboard-card">
+            <span class="card-emoji">💰</span>
+            <h3>Deposit</h3>
+            <p>Deposit money into an account</p>
+            <span class="btn btn-success btn-sm">Deposit Now</span>
+        </a>
+
+        <a href="/banking/transactions/withdraw" class="dashboard-card">
+            <span class="card-emoji">💸</span>
+            <h3>Withdraw</h3>
+            <p>Withdraw money from an account</p>
+            <span class="btn btn-danger btn-sm">Withdraw Now</span>
+        </a>
+
+        <a href="/banking/search" class="dashboard-card">
+            <span class="card-emoji">🔍</span>
+            <h3>Search</h3>
+            <p>Search by Customer ID, Account or Mobile</p>
+            <span class="btn btn-primary btn-sm">Search Now</span>
+        </a>
+
+    </div>
+
+</div>
+</body>
+</html>

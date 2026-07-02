@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Detail | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/banking/customers">Customers</a>
+        <a href="/banking/accounts">Accounts</a>
+        <a href="/banking/transactions">Transactions</a>
+        <a href="/banking/search">Search</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2>👤 Customer Detail</h2>
+            <p>Full information about this customer</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="/banking/customers" class="btn btn-secondary">
+                ← Back to Customers
+            </a>
+        </div>
+    </div>
+
+    <!-- Customer Info -->
+    <div class="card" style="margin-bottom: 28px;">
+        <div class="detail-box">
+            <p>
+                <strong>Customer ID</strong>
+                <span th:text="${customer.customerId}"></span>
+            </p>
+            <p>
+                <strong>Full Name</strong>
+                <span th:text="${customer.firstName + ' ' + customer.lastName}"></span>
+            </p>
+            <p>
+                <strong>Email</strong>
+                <span th:text="${customer.email}"></span>
+            </p>
+            <p>
+                <strong>Phone</strong>
+                <span th:text="${customer.phone}"></span>
+            </p>
+            <p>
+                <strong>Date of Birth</strong>
+                <span th:text="${customer.dob}"></span>
+            </p>
+            <!-- Account Numbers -->
+            <p>
+                <strong>Account Numbers</strong>
+                <span th:if="${#lists.isEmpty(accounts)}">No accounts</span>
+                <span th:each="account, iter : ${accounts}">
+                    <span th:text="${account.accountNumber}"></span>
+                    <span th:if="${!iter.last}"> | </span>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Accounts Table -->
+    <div class="page-header">
+        <div>
+            <h2>🏦 Linked Accounts</h2>
+            <p>All accounts belonging to this customer</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="/banking/accounts/new" class="btn btn-primary">
+                + Add Account
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Type</th>
+                <th>Balance</th>
+                <th>Branch ID</th>
+                <th>Created At</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${accounts}">
+                <td><strong th:text="${account.accountNumber}"></strong></td>
+                <td>
+                        <span class="badge badge-info"
+                              th:text="${account.accountType}"></span>
+                </td>
+                <td>
+                    <strong style="color:#137333;">
+                        ₹<span th:text="${account.balance}"></span>
+                    </strong>
+                </td>
+                <td th:text="${account.branchId != null ?
+                        account.branchId : 'N/A'}"></td>
+                <td th:text="${account.createdAt}"></td>
+                <td>
+                    <a th:href="@{/banking/accounts/{id}
+                            (id=${account.accountNumber})}"
+                       class="btn btn-secondary btn-sm">View</a>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(accounts)}">
+                <td colspan="6"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No accounts found for this customer.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

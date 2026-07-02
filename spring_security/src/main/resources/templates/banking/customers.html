@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Customers</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+<div class="container">
+    <h2>Customers</h2>
+    <a href="/banking/customers/new" class="btn">Add Customer</a>
+    <a href="/dashboard" class="btn">Back to Dashboard</a>
+
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>First Name</th>
+            <th>Last Name</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>DOB</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="customer : ${customers}">
+            <td th:text="${customer.customerId}"></td>
+            <td th:text="${customer.firstName}"></td>
+            <td th:text="${customer.lastName}"></td>
+            <td th:text="${customer.email}"></td>
+            <td th:text="${customer.phone}"></td>
+            <td th:text="${customer.dob}"></td>
+            <td>
+                <a th:href="@{/banking/customers/{id}(id=${customer.customerId})}"
+                   class="btn">View</a>
+                <a th:href="@{/banking/customers/delete/{id}(id=${customer.customerId})}"
+                   class="btn btn-danger"
+                   onclick="return confirm('Delete this customer?')">Delete</a>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

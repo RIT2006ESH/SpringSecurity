@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SecureBank | Home</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/login">Login</a>
+        <a href="/register"
+           style="background:#1a73e8; color:white; padding:8px 20px; border-radius:8px;">
+            Register
+        </a>
+    </div>
+</nav>
+
+<!-- Hero Section -->
+<div style="background: linear-gradient(135deg, #1a73e8 0%, #764ba2 100%);
+            padding: 80px 24px; text-align: center; color: white;">
+    <h1 style="font-size: 48px; font-weight: 800; margin-bottom: 16px;">
+        Banking Made Simple
+    </h1>
+    <p style="font-size: 18px; opacity: 0.9; margin-bottom: 40px; max-width: 500px; margin-left: auto; margin-right: auto;">
+        Secure, fast, and reliable banking platform for managing your finances with ease.
+    </p>
+    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
+        <a href="/register"
+           style="background:white; color:#1a73e8; padding:16px 36px;
+                  border-radius:10px; font-weight:700; font-size:16px;
+                  text-decoration:none;">
+            Get Started →
+        </a>
+        <a href="/login"
+           style="background:transparent; color:white; padding:16px 36px;
+                  border-radius:10px; font-weight:700; font-size:16px;
+                  text-decoration:none; border: 2px solid white;">
+            Sign In
+        </a>
+    </div>
+</div>
+
+<!-- Features -->
+<div class="container">
+    <div style="text-align:center; margin: 48px 0 32px;">
+        <h2 style="font-size:32px; font-weight:700;">Why SecureBank?</h2>
+        <p style="color:#5f6368; margin-top:8px;">Everything you need in one place</p>
+    </div>
+
+    <div class="dashboard-grid">
+        <div class="card" style="text-align:center;">
+            <div style="font-size:40px; margin-bottom:16px;">🔒</div>
+            <h3 style="font-size:18px; color:#202124; margin-bottom:8px;">Secure</h3>
+            <p style="color:#5f6368; font-size:14px;">
+                JWT authentication and email verification keep your account safe.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:40px; margin-bottom:16px;">⚡</div>
+            <h3 style="font-size:18px; color:#202124; margin-bottom:8px;">Fast</h3>
+            <p style="color:#5f6368; font-size:14px;">
+                Instant deposits and withdrawals processed in real time.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:40px; margin-bottom:16px;">📊</div>
+            <h3 style="font-size:18px; color:#202124; margin-bottom:8px;">Transparent</h3>
+            <p style="color:#5f6368; font-size:14px;">
+                Full transaction history and account details always available.
+            </p>
+        </div>
+
+        <div class="card" style="text-align:center;">
+            <div style="font-size:40px; margin-bottom:16px;">📱</div>
+            <h3 style="font-size:18px; color:#202124; margin-bottom:8px;">Accessible</h3>
+            <p style="color:#5f6368; font-size:14px;">
+                Access your account from any device, anywhere, anytime.
+            </p>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin: 48px 0;">
+        <a href="/register" class="btn btn-primary" style="padding:16px 48px; font-size:16px;">
+            Open Your Account Today →
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/manager/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/manager/dashboard">Dashboard</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2>Manager Dashboard 👔</h2>
+        <p>Review pending accounts, KYC documents and manage customer accounts</p>
+    </div>
+
+    <!-- Message Box -->
+    <div id="globalMessage"></div>
+
+    <!-- Stats Cards -->
+    <div class="dashboard-grid" style="margin-bottom: 32px;">
+        <div class="card">
+            <div class="card-icon" style="background:#fef7e0;">⏳</div>
+            <h3>Pending Accounts</h3>
+            <div class="card-value" th:text="${pendingCount}">0</div>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:#e6f4ea;">✅</div>
+            <h3>Approved Accounts</h3>
+            <div class="card-value" th:text="${approvedCount}">0</div>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:#fce8e6;">❄️</div>
+            <h3>Frozen Accounts</h3>
+            <div class="card-value" th:text="${frozenCount}">0</div>
+        </div>
+        <div class="card">
+            <div class="card-icon" style="background:#e8f0fe;">📋</div>
+            <h3>Pending KYC</h3>
+            <div class="card-value" th:text="${pendingKycCount}">0</div>
+        </div>
+    </div>
+
+    <!-- Pending Account Approvals -->
+    <div class="page-header">
+        <div>
+            <h2>⏳ Pending Account Approvals</h2>
+            <p>Accounts waiting for your approval</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-bottom: 32px;">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Phone</th>
+                <th>Role</th>
+                <th>Email Verified</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${pendingAccounts}"
+                th:id="'row-' + ${account.id}">
+                <td th:text="${account.id}"></td>
+                <td th:text="${account.firstName + ' ' + account.lastName}"></td>
+                <td th:text="${account.email}"></td>
+                <td th:text="${account.phone}"></td>
+                <td>
+                    <span class="badge badge-info"
+                          th:text="${account.role}"></span>
+                </td>
+                <td>
+                    <span class="badge badge-success"
+                          th:if="${account.emailVerified}">Verified</span>
+                    <span class="badge badge-danger"
+                          th:if="${!account.emailVerified}">Not Verified</span>
+                </td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <button class="btn btn-success btn-sm"
+                                th:onclick="'approveAccount(' + ${account.id} + ')'">
+                            ✅ Approve
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                                th:onclick="'rejectAccount(' + ${account.id} + ')'">
+                            ❌ Reject
+                        </button>
+                        <button class="btn btn-warning btn-sm"
+                                th:onclick="'freezeAccount(' + ${account.id} + ')'">
+                            ❄️ Freeze
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pendingAccounts)}">
+                <td colspan="7"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No pending accounts found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Approved Accounts (with freeze option) -->
+    <div class="page-header">
+        <div>
+            <h2>✅ Approved Accounts</h2>
+            <p>Active approved accounts — freeze if suspicious</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-bottom: 32px;">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${approvedAccounts}"
+                th:id="'approved-row-' + ${account.id}">
+                <td th:text="${account.id}"></td>
+                <td th:text="${account.firstName + ' ' + account.lastName}"></td>
+                <td th:text="${account.email}"></td>
+                <td>
+                    <span class="badge badge-success"
+                          th:text="${account.accountStatus}"></span>
+                </td>
+                <td>
+                    <button class="btn btn-warning btn-sm"
+                            th:onclick="'freezeAccount(' + ${account.id} + ')'">
+                        ❄️ Freeze
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(approvedAccounts)}">
+                <td colspan="5"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No approved accounts found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Frozen Accounts -->
+    <div class="page-header">
+        <div>
+            <h2>❄️ Frozen Accounts</h2>
+            <p>Accounts currently frozen due to suspicious activity</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-bottom: 32px;">
+        <table>
+            <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Status</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${frozenAccounts}"
+                th:id="'frozen-row-' + ${account.id}">
+                <td th:text="${account.id}"></td>
+                <td th:text="${account.firstName + ' ' + account.lastName}"></td>
+                <td th:text="${account.email}"></td>
+                <td>
+                    <span class="badge badge-danger"
+                          th:text="${account.accountStatus}"></span>
+                </td>
+                <td>
+                    <button class="btn btn-success btn-sm"
+                            th:onclick="'unfreezeAccount(' + ${account.id} + ')'">
+                        🔓 Unfreeze
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(frozenAccounts)}">
+                <td colspan="5"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No frozen accounts found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pending KYC -->
+    <div class="page-header">
+        <div>
+            <h2>📋 Pending KYC Documents</h2>
+            <p>KYC submissions waiting for review</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-bottom: 32px;">
+        <table>
+            <thead>
+            <tr>
+                <th>KYC ID</th>
+                <th>Customer ID</th>
+                <th>Aadhaar</th>
+                <th>PAN</th>
+                <th>Submitted At</th>
+                <th>Documents</th>
+                <th>Actions</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="kyc : ${pendingKyc}"
+                th:id="'kyc-row-' + ${kyc.kycId}">
+                <td th:text="${kyc.kycId}"></td>
+                <td th:text="${kyc.customerId}"></td>
+                <td th:text="'XXXX XXXX ' +
+                        ${#strings.substring(kyc.aadhaarNumber, 8)}">
+                </td>
+                <td th:text="${kyc.panNumber}"></td>
+                <td th:text="${kyc.submittedAt}"></td>
+                <td>
+                    <div style="display:flex; gap:8px;">
+                        <a th:href="@{/api/kyc/document/{id}/aadhaar(id=${kyc.kycId})}"
+                           class="btn btn-secondary btn-sm"
+                           target="_blank">📄 Aadhaar</a>
+                        <a th:href="@{/api/kyc/document/{id}/pan(id=${kyc.kycId})}"
+                           class="btn btn-secondary btn-sm"
+                           target="_blank">📄 PAN</a>
+                    </div>
+                </td>
+                <td>
+                    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <button class="btn btn-success btn-sm"
+                                th:onclick="'verifyKyc(' + ${kyc.kycId} + ')'">
+                            ✅ Verify
+                        </button>
+                        <button class="btn btn-danger btn-sm"
+                                th:onclick="'rejectKycPrompt(' + ${kyc.kycId} + ')'">
+                            ❌ Reject
+                        </button>
+                    </div>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(pendingKyc)}">
+                <td colspan="7"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No pending KYC documents found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    function getHeaders() {
+        const jwt = getCookie('jwt');
+        return jwt ? {'Authorization': 'Bearer ' + jwt,
+                'Content-Type': 'application/json'} :
+            {'Content-Type': 'application/json'};
+    }
+
+    function showMessage(message, type) {
+        const div = document.getElementById('globalMessage');
+        div.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
+        setTimeout(() => div.innerHTML = '', 4000);
+    }
+
+    function removeRow(rowId) {
+        const row = document.getElementById(rowId);
+        if (row) row.remove();
+    }
+
+    // ===== ACCOUNT APPROVAL =====
+    function approveAccount(userId) {
+        if (!confirm('Approve this account?')) return;
+        fetch(`/api/approval/approve/${userId}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('✅ Account approved successfully!', 'success');
+                    removeRow('row-' + userId);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+
+    // ===== ACCOUNT REJECTION =====
+    function rejectAccount(userId) {
+        if (!confirm('Reject this account?')) return;
+        fetch(`/api/approval/reject/${userId}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('❌ Account rejected.', 'error');
+                    removeRow('row-' + userId);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+
+    // ===== FREEZE ACCOUNT =====
+    function freezeAccount(userId) {
+        if (!confirm('Freeze this account? This will prevent the user from logging in.')) return;
+        fetch(`/api/approval/freeze/${userId}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('❄️ Account frozen successfully.', 'info');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+
+    // ===== UNFREEZE ACCOUNT =====
+    function unfreezeAccount(userId) {
+        if (!confirm('Unfreeze this account?')) return;
+        fetch(`/api/approval/unfreeze/${userId}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('🔓 Account unfrozen successfully!', 'success');
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+
+    // ===== VERIFY KYC =====
+    function verifyKyc(kycId) {
+        if (!confirm('Verify this KYC document?')) return;
+        fetch(`/api/kyc/verify/${kycId}`, {
+            method: 'PUT',
+            headers: getHeaders()
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('✅ KYC verified successfully!', 'success');
+                    removeRow('kyc-row-' + kycId);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+
+    // ===== REJECT KYC (with reason prompt) =====
+    function rejectKycPrompt(kycId) {
+        const reason = prompt('Enter rejection reason:');
+        if (!reason || reason.trim() === '') {
+            alert('Rejection reason is required.');
+            return;
+        }
+        fetch(`/api/kyc/reject/${kycId}`, {
+            method: 'PUT',
+            headers: getHeaders(),
+            body: JSON.stringify({reason: reason.trim()})
+        })
+            .then(r => r.json())
+            .then(data => {
+                if (data.error) {
+                    showMessage('❌ ' + data.error, 'error');
+                } else {
+                    showMessage('❌ KYC rejected. Reason: ' + reason, 'error');
+                    removeRow('kyc-row-' + kycId);
+                    setTimeout(() => location.reload(), 1500);
+                }
+            })
+            .catch(e => showMessage('❌ Error: ' + e.message, 'error'));
+    }
+</script>
+
+</body>
+</html>

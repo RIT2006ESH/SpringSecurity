@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/banking/customers">Customers</a>
+        <a href="/banking/accounts">Accounts</a>
+        <a href="/banking/transactions">Transactions</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <div class="page-header">
+        <div>
+            <h2>💳 Transactions</h2>
+            <p>View all transaction history</p>
+        </div>
+        <div class="page-header-actions">
+            <a href="/banking/transactions/deposit" class="btn btn-success">
+                💰 Deposit
+            </a>
+            <a href="/banking/transactions/withdraw" class="btn btn-danger">
+                💸 Withdraw
+            </a>
+            <a href="/dashboard" class="btn btn-secondary">
+                ← Dashboard
+            </a>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Account Number</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction : ${transactions}">
+                <td th:text="${transaction.transId}"></td>
+                <td th:text="${transaction.accountNumber}"></td>
+                <td>
+                        <span class="badge"
+                              th:classappend="${transaction.transactionType.name() == 'DEPOSIT'} ? 'badge-success' : 'badge-danger'"
+                              th:text="${transaction.transactionType}"></span>
+                </td>
+                <td>
+                    <strong th:style="${transaction.transactionType.name() == 'DEPOSIT'} ? 'color:#137333' : 'color:#c5221f'">
+                        ₹<span th:text="${transaction.amount}"></span>
+                    </strong>
+                </td>
+                <td th:text="${transaction.createdAt}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transactions)}">
+                <td colspan="5" style="text-align:center; color:#5f6368; padding:32px;">
+                    No transactions found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+</body>
+</html>

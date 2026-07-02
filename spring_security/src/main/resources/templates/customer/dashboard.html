@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Dashboard | SecureBank</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+<!-- Navbar -->
+<nav class="navbar">
+    <a href="/customer/dashboard" class="navbar-brand">
+        🏦 <span>SecureBank</span>
+    </a>
+    <div class="navbar-links">
+        <a href="/customer/dashboard">Dashboard</a>
+        <a href="/logout" style="color:#ea4335;">Logout</a>
+    </div>
+</nav>
+
+<div class="container">
+
+    <!-- Welcome Banner -->
+    <div class="welcome-banner">
+        <h2 th:text="'Welcome, ' + ${customer?.firstName} + ' 👋'"
+            th:if="${customer != null}">Welcome 👋</h2>
+        <h2 th:if="${customer == null}">Welcome 👋</h2>
+        <p>Here's an overview of your banking activity</p>
+    </div>
+
+    <!-- Account Status Alert -->
+    <div th:if="${accountStatus != null}">
+        <div class="alert alert-info"
+             th:if="${accountStatus.name() == 'PENDING'}">
+            ⏳ Your account is pending approval by our team.
+            You will be notified once approved.
+        </div>
+        <div class="alert alert-success"
+             th:if="${accountStatus.name() == 'APPROVED'}">
+            ✅ Your account is active and approved.
+        </div>
+        <div class="alert alert-error"
+             th:if="${accountStatus.name() == 'FROZEN'}">
+            ❄️ Your account has been frozen. Please contact support.
+        </div>
+        <div class="alert alert-error"
+             th:if="${accountStatus.name() == 'REJECTED'}">
+            ❌ Your account application was rejected.
+            Please contact support.
+        </div>
+    </div>
+
+    <!-- KYC Status (shown when KYC already submitted) -->
+    <div class="card" style="margin-bottom: 28px;"
+         th:if="${kyc != null}">
+        <h3 style="font-size:18px; font-weight:700;
+                   color:#202124; margin-bottom:16px;">
+            📋 KYC Status
+        </h3>
+        <div class="detail-box">
+            <p>
+                <strong>KYC ID</strong>
+                <span th:text="${kyc.kycId}"></span>
+            </p>
+            <p>
+                <strong>Aadhaar Number</strong>
+                <span th:text="'XXXX XXXX ' +
+                    ${#strings.substring(kyc.aadhaarNumber, 8)}">
+                </span>
+            </p>
+            <p>
+                <strong>PAN Number</strong>
+                <span th:text="${kyc.panNumber}"></span>
+            </p>
+            <p>
+                <strong>Status</strong>
+                <span class="badge"
+                      th:classappend="${kyc.status.name() == 'VERIFIED'} ?
+                          'badge-success' :
+                          (${kyc.status.name() == 'REJECTED'} ?
+                          'badge-danger' : 'badge-warning')"
+                      th:text="${kyc.status}"></span>
+            </p>
+            <p th:if="${kyc.rejectionReason != null}">
+                <strong>Rejection Reason</strong>
+                <span style="color:#c5221f;"
+                      th:text="${kyc.rejectionReason}"></span>
+            </p>
+            <p>
+                <strong>Submitted At</strong>
+                <span th:text="${kyc.submittedAt}"></span>
+            </p>
+        </div>
+    </div>
+
+    <!-- KYC Upload Form (shown only when KYC not yet submitted) -->
+    <div class="card" style="margin-bottom: 28px;"
+         th:if="${kyc == null}">
+        <h3 style="font-size:18px; font-weight:700;
+                   color:#202124; margin-bottom:16px;">
+            📤 Upload KYC Documents
+        </h3>
+
+        <div id="kycMessage"></div>
+
+        <div class="form-group">
+            <label>Aadhaar Number</label>
+            <input type="text" id="aadhaarNumber"
+                   placeholder="12-digit Aadhaar number"
+                   maxlength="12"/>
+        </div>
+
+        <div class="form-group">
+            <label>PAN Number</label>
+            <input type="text" id="panNumber"
+                   placeholder="e.g. ABCDE1234F"
+                   maxlength="10"
+                   style="text-transform:uppercase"/>
+        </div>
+
+        <div class="form-group">
+            <label>Aadhaar Document (PDF or Image)</label>
+            <input type="file" id="aadhaarFile"
+                   accept=".pdf,.jpg,.jpeg,.png"/>
+        </div>
+
+        <div class="form-group">
+            <label>PAN Document (PDF or Image)</label>
+            <input type="file" id="panFile"
+                   accept=".pdf,.jpg,.jpeg,.png"/>
+        </div>
+
+        <button type="button" class="btn"
+                onclick="submitKyc()">
+            📤 Upload KYC Documents
+        </button>
+    </div>
+
+    <!-- My Accounts -->
+    <div class="page-header">
+        <div>
+            <h2>🏦 My Accounts</h2>
+            <p>Your bank accounts and balances</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper" style="margin-bottom: 28px;">
+        <table>
+            <thead>
+            <tr>
+                <th>Account Number</th>
+                <th>Type</th>
+                <th>Balance</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="account : ${accounts}">
+                <td th:text="${account.accountNumber}"></td>
+                <td>
+                    <span class="badge badge-info"
+                          th:text="${account.accountType}"></span>
+                </td>
+                <td>
+                    <strong style="color:#137333; font-size:16px;">
+                        ₹<span th:text="${account.balance}"></span>
+                    </strong>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(accounts)}">
+                <td colspan="3"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No accounts found. Please contact the bank.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Recent Transactions -->
+    <div class="page-header">
+        <div>
+            <h2>💳 Recent Transactions</h2>
+            <p>Your latest banking activity</p>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table>
+            <thead>
+            <tr>
+                <th>Transaction ID</th>
+                <th>Account Number</th>
+                <th>Type</th>
+                <th>Amount</th>
+                <th>Date</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="transaction : ${transactions}">
+                <td th:text="${transaction.transId}"></td>
+                <td th:text="${transaction.accountNumber}"></td>
+                <td>
+                    <span class="badge"
+                          th:classappend="${transaction.transactionType.name()
+                              == 'DEPOSIT'} ? 'badge-success' : 'badge-danger'"
+                          th:text="${transaction.transactionType}"></span>
+                </td>
+                <td>
+                    <strong th:style="${transaction.transactionType.name()
+                            == 'DEPOSIT'} ? 'color:#137333' : 'color:#c5221f'">
+                        ₹<span th:text="${transaction.amount}"></span>
+                    </strong>
+                </td>
+                <td th:text="${transaction.createdAt}"></td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(transactions)}">
+                <td colspan="5"
+                    style="text-align:center; color:#5f6368; padding:32px;">
+                    No transactions found.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+    function getCookie(name) {
+        const value = `; ${document.cookie}`;
+        const parts = value.split(`; ${name}=`);
+        if (parts.length === 2) return parts.pop().split(';').shift();
+        return null;
+    }
+
+    function submitKyc() {
+        const aadhaarNumber = document.getElementById('aadhaarNumber').value.trim();
+        const panNumber = document.getElementById('panNumber').value.trim().toUpperCase();
+        const aadhaarFile = document.getElementById('aadhaarFile').files[0];
+        const panFile = document.getElementById('panFile').files[0];
+        const messageDiv = document.getElementById('kycMessage');
+
+        // Frontend validation
+        if (!aadhaarNumber || aadhaarNumber.length !== 12 || !/^\d+$/.test(aadhaarNumber)) {
+            messageDiv.innerHTML =
+                '<div class="alert alert-error">❌ Aadhaar must be exactly 12 digits</div>';
+            return;
+        }
+
+        if (!panNumber || panNumber.length !== 10 ||
+            !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
+            messageDiv.innerHTML =
+                '<div class="alert alert-error">❌ PAN must be in format: ABCDE1234F</div>';
+            return;
+        }
+
+        if (!aadhaarFile) {
+            messageDiv.innerHTML =
+                '<div class="alert alert-error">❌ Please select Aadhaar document</div>';
+            return;
+        }
+
+        if (!panFile) {
+            messageDiv.innerHTML =
+                '<div class="alert alert-error">❌ Please select PAN document</div>';
+            return;
+        }
+
+        // Build form data
+        const formData = new FormData();
+        formData.append('aadhaarNumber', aadhaarNumber);
+        formData.append('panNumber', panNumber);
+        formData.append('aadhaarFile', aadhaarFile);
+        formData.append('panFile', panFile);
+
+        messageDiv.innerHTML =
+            '<div class="alert alert-info">⏳ Uploading documents...</div>';
+
+        // Get JWT from cookie for Authorization header
+        const jwt = getCookie('jwt');
+
+        fetch('/api/kyc/upload', {
+            method: 'POST',
+            headers: jwt ? {'Authorization': 'Bearer ' + jwt} : {},
+            body: formData
+        })
+            .then(response => response.json())
+            .then(data => {
+                if (data.kycId) {
+                    messageDiv.innerHTML =
+                        '<div class="alert alert-success">' +
+                        '✅ KYC uploaded successfully! Status: ' +
+                        data.status + '. Refreshing...</div>';
+                    setTimeout(() => location.reload(), 2000);
+                } else {
+                    messageDiv.innerHTML =
+                        '<div class="alert alert-error">' +
+                        '❌ ' + (data.error || 'Upload failed. Try again.') +
+                        '</div>';
+                }
+            })
+            .catch(error => {
+                messageDiv.innerHTML =
+                    '<div class="alert alert-error">' +
+                    '❌ Network error: ' + error.message + '</div>';
+            });
+    }
+</script>
+
+</body>
+</html>
