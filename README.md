@@ -11,11 +11,11 @@ Tech stack: Spring Boot 3.4.5 (parent), Java (upgrade target: 21), Maven Wrapper
 
 System Architecture (high-level)
 
-![image.png](https://eraser.imgix.net/workspaces/6x4Oh595QfwZiI8xHios/dMwocc0MeTZ2IGsV23/image_s-OF2CKQab93bPt0v6wgb.png?ixlib=js-3.8.0 "architecture diagram")
+![image.png](https://eraser.imgix.net/workspaces/6x4Oh595QfwZiI8xHios/ftrADLgUIFdMwocc0MeTZ2IGsV23/image_s-OF2CKQab93bPt0v6wgb.png?ixlib=js-3.8.0"architecture diagram")
 
 ER-Diagram
 
-![image.png](https://eraser.imgix.net/workspaces/6x4Oh595QfwZiI8xHios/dMwocc0MeTZ2IGsV23/image_uoKSqaY0QESqdCnj5Kz2J.png?ixlib=js-3.8.0 "ER diagram")
+![image.png](https://eraser.imgix.net/workspaces/6x4Oh595QfwZiI8xHios/ftrADLgUIFdMwocc0MeTZ2IGsV23/image_uoKSqaY0QESqdCnj5Kz2J.png?ixlib=js-3.8.0 "ER diagram")
 
 Feature Implementation Details
 
