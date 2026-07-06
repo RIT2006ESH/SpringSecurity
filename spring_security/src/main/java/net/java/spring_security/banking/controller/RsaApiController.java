@@ -45,7 +45,6 @@ public class RsaApiController {
         try {
             String aadhaar = request.get("aadhaar");
 
-            // Validate Aadhaar
             if (!aadhaar.matches("\\d{12}")) {
                 return ResponseEntity.badRequest()
                         .body(error("Aadhaar must be 12 digits"));
@@ -53,7 +52,6 @@ public class RsaApiController {
 
             String encrypted = rsaEncryptionService.encrypt(aadhaar);
 
-            // Save history
             saveHistory(authentication.getName(),
                     EncryptionHistory.OperationType.ENCRYPT,
                     EncryptionHistory.DataType.AADHAAR,
@@ -77,7 +75,6 @@ public class RsaApiController {
         try {
             String pan = request.get("pan");
 
-            // Validate PAN
             if (!pan.matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")) {
                 return ResponseEntity.badRequest()
                         .body(error("Invalid PAN format (e.g. ABCDE1234F)"));
@@ -85,7 +82,6 @@ public class RsaApiController {
 
             String encrypted = rsaEncryptionService.encrypt(pan);
 
-            // Save history
             saveHistory(authentication.getName(),
                     EncryptionHistory.OperationType.ENCRYPT,
                     EncryptionHistory.DataType.PAN,
@@ -107,7 +103,6 @@ public class RsaApiController {
             @RequestBody Map<String, String> request,
             Authentication authentication) {
         try {
-            // Only Manager and Admin can decrypt
             boolean isAuthorized = authentication.getAuthorities().stream()
                     .anyMatch(a -> a.getAuthority().equals("ROLE_MANAGER") ||
                             a.getAuthority().equals("ROLE_ADMIN"));
@@ -118,10 +113,9 @@ public class RsaApiController {
             }
 
             String encrypted = request.get("encrypted");
-            String dataType = request.get("dataType"); // AADHAAR or PAN
+            String dataType = request.get("dataType");
             String decrypted = rsaEncryptionService.decrypt(encrypted);
 
-            // Save history
             saveHistory(authentication.getName(),
                     EncryptionHistory.OperationType.DECRYPT,
                     EncryptionHistory.DataType.valueOf(dataType),

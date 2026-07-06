@@ -44,8 +44,6 @@ public class User {
     @Column(name = "role")
     private String role = "ROLE_USER";
 
-    // ===== NEW FIELDS =====
-
     @Enumerated(EnumType.STRING)
     @Column(name = "account_status")
     private AccountStatus accountStatus = AccountStatus.PENDING;
@@ -55,6 +53,17 @@ public class User {
 
     @Column(name = "approved_at")
     private LocalDateTime approvedAt;
+
+    // ===== PASSWORD COMPLEXITY / CERT-IN FIELDS =====
+
+    @Column(name = "failed_attempts")
+    private int failedAttempts = 0;
+
+    @Column(name = "locked_until")
+    private LocalDateTime lockedUntil;
+
+    @Column(name = "password_changed_at")
+    private LocalDateTime passwordChangedAt;
 
     public enum AccountStatus {
         PENDING, APPROVED, REJECTED, FROZEN

@@ -19,7 +19,11 @@
     </div>
 </nav>
 
-<div class="container">
+<div class="container"
+     th:with="monthsSince=${kyc != null ? T(java.time.temporal.ChronoUnit).MONTHS.between(kyc.submittedAt, T(java.time.LocalDateTime).now()) : -1},
+              kycColor=${kyc == null ? 'red' : (monthsSince < 6 ? 'green' : (monthsSince < 12 ? 'yellow' : 'red'))},
+              kycMsg=${kyc == null ? 'KYC Not Submitted — Action Required' : (monthsSince < 6 ? 'KYC Valid' : (monthsSince < 12 ? 'KYC Expiring Soon' : 'KYC Expired — Action Required'))},
+              kycExp=${kyc == null || monthsSince >= 6}">
 
     <!-- Welcome Banner -->
     <div class="welcome-banner">
@@ -51,91 +55,178 @@
         </div>
     </div>
 
-    <!-- KYC Status (shown when KYC already submitted) -->
-    <div class="card" style="margin-bottom: 28px;"
-         th:if="${kyc != null}">
-        <h3 style="font-size:18px; font-weight:700;
-                   color:#202124; margin-bottom:16px;">
-            📋 KYC Status
-        </h3>
-        <div class="detail-box">
-            <p>
-                <strong>KYC ID</strong>
-                <span th:text="${kyc.kycId}"></span>
-            </p>
-            <p>
-                <strong>Aadhaar Number</strong>
-                <span th:text="'XXXX XXXX ' +
-                    ${#strings.substring(kyc.aadhaarNumber, 8)}">
-                </span>
-            </p>
-            <p>
-                <strong>PAN Number</strong>
-                <span th:text="${kyc.panNumber}"></span>
-            </p>
-            <p>
-                <strong>Status</strong>
-                <span class="badge"
-                      th:classappend="${kyc.status.name() == 'VERIFIED'} ?
-                          'badge-success' :
-                          (${kyc.status.name() == 'REJECTED'} ?
-                          'badge-danger' : 'badge-warning')"
-                      th:text="${kyc.status}"></span>
-            </p>
-            <p th:if="${kyc.rejectionReason != null}">
-                <strong>Rejection Reason</strong>
-                <span style="color:#c5221f;"
-                      th:text="${kyc.rejectionReason}"></span>
-            </p>
-            <p>
-                <strong>Submitted At</strong>
-                <span th:text="${kyc.submittedAt}"></span>
+    <!-- KYC Status Banner -->
+    <div th:if="${kycColor == 'green'}"
+         style="background:#e6f4ea; border:2px solid #34a853;
+                border-radius:12px; padding:20px; margin-bottom:28px;
+                display:flex; align-items:center; gap:16px;">
+        <span style="font-size:32px;">✅</span>
+        <div>
+            <h3 style="color:#137333; margin:0;">KYC Valid</h3>
+            <p style="color:#137333; margin:0;">
+                Your KYC documents are verified and up to date.
             </p>
         </div>
     </div>
 
-    <!-- KYC Upload Form (shown only when KYC not yet submitted) -->
-    <div class="card" style="margin-bottom: 28px;"
-         th:if="${kyc == null}">
-        <h3 style="font-size:18px; font-weight:700;
-                   color:#202124; margin-bottom:16px;">
-            📤 Upload KYC Documents
-        </h3>
-
-        <div id="kycMessage"></div>
-
-        <div class="form-group">
-            <label>Aadhaar Number</label>
-            <input type="text" id="aadhaarNumber"
-                   placeholder="12-digit Aadhaar number"
-                   maxlength="12"/>
+    <div th:if="${kycColor == 'yellow'}"
+         style="background:#fef7e0; border:2px solid #fbbc04;
+                border-radius:12px; padding:20px; margin-bottom:28px;
+                display:flex; align-items:center; gap:16px;">
+        <span style="font-size:32px;">⚠️</span>
+        <div>
+            <h3 style="color:#b06000; margin:0;">KYC Expiring Soon</h3>
+            <p style="color:#b06000; margin:0;">
+                Your KYC documents will expire soon.
+                Please re-upload to avoid disruption.
+            </p>
         </div>
-
-        <div class="form-group">
-            <label>PAN Number</label>
-            <input type="text" id="panNumber"
-                   placeholder="e.g. ABCDE1234F"
-                   maxlength="10"
-                   style="text-transform:uppercase"/>
-        </div>
-
-        <div class="form-group">
-            <label>Aadhaar Document (PDF or Image)</label>
-            <input type="file" id="aadhaarFile"
-                   accept=".pdf,.jpg,.jpeg,.png"/>
-        </div>
-
-        <div class="form-group">
-            <label>PAN Document (PDF or Image)</label>
-            <input type="file" id="panFile"
-                   accept=".pdf,.jpg,.jpeg,.png"/>
-        </div>
-
-        <button type="button" class="btn"
-                onclick="submitKyc()">
-            📤 Upload KYC Documents
-        </button>
     </div>
+
+    <div th:if="${kycColor == 'red'}"
+         style="background:#fce8e6; border:2px solid #ea4335;
+                border-radius:12px; padding:20px; margin-bottom:28px;
+                display:flex; align-items:center; gap:16px;">
+        <span style="font-size:32px;">🔴</span>
+        <div>
+            <h3 style="color:#c5221f; margin:0;"
+                th:text="${kycMsg}">KYC Action Required</h3>
+            <p style="color:#c5221f; margin:0;">
+                Please upload your KYC documents immediately
+                to continue using banking services.
+            </p>
+        </div>
+    </div>
+
+    <!-- KYC Section Card -->
+    <div class="card" style="margin-bottom: 28px;">
+        <div style="display:flex; justify-content:space-between;
+                    align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:18px; font-weight:700; color:#202124;">
+                📋 KYC Status
+            </h3>
+            <span style="padding:6px 16px; border-radius:20px;
+                         font-weight:600; font-size:13px;"
+                  th:style="${kycColor == 'green'} ?
+                      'background:#e6f4ea; color:#137333;' :
+                      (${kycColor == 'yellow'} ?
+                      'background:#fef7e0; color:#b06000;' :
+                      'background:#fce8e6; color:#c5221f;')"
+                  th:text="${kycMsg}">
+            </span>
+        </div>
+
+        <!-- KYC Details if submitted -->
+        <div th:if="${kyc != null}">
+            <div class="detail-box">
+                <p>
+                    <strong>KYC ID</strong>
+                    <span th:text="${kyc.kycId}"></span>
+                </p>
+                <p>
+                    <strong>Aadhaar Number</strong>
+                    <span th:text="'XXXX XXXX ' +
+                        ${#strings.substring(kyc.aadhaarNumber, 8)}">
+                    </span>
+                </p>
+                <p>
+                    <strong>PAN Number</strong>
+                    <span th:text="${kyc.panNumber}"></span>
+                </p>
+                <p>
+                    <strong>Verification Status</strong>
+                    <span class="badge"
+                          th:classappend="${kyc.status.name() == 'VERIFIED'} ?
+                              'badge-success' :
+                              (${kyc.status.name() == 'REJECTED'} ?
+                              'badge-danger' : 'badge-warning')"
+                          th:text="${kyc.status}"></span>
+                </p>
+                <p>
+                    <strong>Submitted At</strong>
+                    <span th:text="${kyc.submittedAt}"></span>
+                </p>
+                <p th:if="${kyc.rejectionReason != null}">
+                    <strong>Rejection Reason</strong>
+                    <span style="color:#c5221f;"
+                          th:text="${kyc.rejectionReason}"></span>
+                </p>
+            </div>
+        </div>
+
+        <!-- KYC Upload Form (shown when expired or not submitted) -->
+        <div th:if="${kycExp}">
+            <div style="border-top:2px solid #dadce0;
+                        padding-top:24px; margin-top:16px;">
+
+                <button type="button"
+                        onclick="document.getElementById('kycForm')
+                        .style.display =
+                        document.getElementById('kycForm')
+                        .style.display === 'none' ? 'block' : 'none'"
+                        class="btn btn-danger"
+                        style="width:auto; padding:12px 32px;
+                               margin-bottom:20px;">
+                    📤 Upload KYC Documents
+                </button>
+
+                <div id="kycForm" style="display:none;">
+                    <h3 style="font-size:16px; font-weight:700;
+                               color:#202124; margin-bottom:16px;">
+                        📤 Upload KYC Documents
+                    </h3>
+
+                    <div class="alert alert-info" style="margin-bottom:20px;">
+                        ℹ️ Please upload your Aadhaar and PAN documents.
+                        Only JPG, PNG or PDF files are accepted (max 5MB each).
+                    </div>
+
+                    <form id="kycUploadForm" enctype="multipart/form-data">
+
+                        <div class="form-group">
+                            <label>Aadhaar Number (12 digits)</label>
+                            <input type="text" name="aadhaarNumber"
+                                   placeholder="12-digit Aadhaar number"
+                                   pattern="\d{12}"
+                                   maxlength="12"
+                                   required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>PAN Number</label>
+                            <input type="text" name="panNumber"
+                                   placeholder="E.g. ABCDE1234F"
+                                   pattern="[A-Z]{5}[0-9]{4}[A-Z]{1}"
+                                   maxlength="10"
+                                   style="text-transform:uppercase;"
+                                   required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Aadhaar Document (PDF or Image)</label>
+                            <input type="file" name="aadhaarFile"
+                                   accept=".jpg,.jpeg,.png,.pdf"
+                                   required/>
+                        </div>
+
+                        <div class="form-group">
+                            <label>PAN Document (PDF or Image)</label>
+                            <input type="file" name="panFile"
+                                   accept=".jpg,.jpeg,.png,.pdf"
+                                   required/>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary"
+                                style="width:auto; padding:12px 32px;">
+                            📤 Submit KYC Documents
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <!-- END KYC Card -->
 
     <!-- My Accounts -->
     <div class="page-header">
@@ -158,8 +249,8 @@
             <tr th:each="account : ${accounts}">
                 <td th:text="${account.accountNumber}"></td>
                 <td>
-                    <span class="badge badge-info"
-                          th:text="${account.accountType}"></span>
+                        <span class="badge badge-info"
+                              th:text="${account.accountType}"></span>
                 </td>
                 <td>
                     <strong style="color:#137333; font-size:16px;">
@@ -201,14 +292,16 @@
                 <td th:text="${transaction.transId}"></td>
                 <td th:text="${transaction.accountNumber}"></td>
                 <td>
-                    <span class="badge"
-                          th:classappend="${transaction.transactionType.name()
-                              == 'DEPOSIT'} ? 'badge-success' : 'badge-danger'"
-                          th:text="${transaction.transactionType}"></span>
+                        <span class="badge"
+                              th:classappend="${transaction.transactionType
+                                  .name() == 'DEPOSIT'} ?
+                                  'badge-success' : 'badge-danger'"
+                              th:text="${transaction.transactionType}"></span>
                 </td>
                 <td>
-                    <strong th:style="${transaction.transactionType.name()
-                            == 'DEPOSIT'} ? 'color:#137333' : 'color:#c5221f'">
+                    <strong th:style="${transaction.transactionType
+                            .name() == 'DEPOSIT'} ?
+                            'color:#137333' : 'color:#c5221f'">
                         ₹<span th:text="${transaction.amount}"></span>
                     </strong>
                 </td>
@@ -227,84 +320,39 @@
 </div>
 
 <script>
-    function getCookie(name) {
-        const value = `; ${document.cookie}`;
-        const parts = value.split(`; ${name}=`);
-        if (parts.length === 2) return parts.pop().split(';').shift();
-        return null;
-    }
+    var kycUploadForm = document.getElementById('kycUploadForm');
+    if (kycUploadForm) {
+        kycUploadForm.addEventListener('submit', async function (e) {
+            e.preventDefault();
 
-    function submitKyc() {
-        const aadhaarNumber = document.getElementById('aadhaarNumber').value.trim();
-        const panNumber = document.getElementById('panNumber').value.trim().toUpperCase();
-        const aadhaarFile = document.getElementById('aadhaarFile').files[0];
-        const panFile = document.getElementById('panFile').files[0];
-        const messageDiv = document.getElementById('kycMessage');
+            var formData = new FormData(this);
+            var submitBtn = this.querySelector('button[type="submit"]');
+            var originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Uploading...';
 
-        // Frontend validation
-        if (!aadhaarNumber || aadhaarNumber.length !== 12 || !/^\d+$/.test(aadhaarNumber)) {
-            messageDiv.innerHTML =
-                '<div class="alert alert-error">❌ Aadhaar must be exactly 12 digits</div>';
-            return;
-        }
+            try {
+                var response = await fetch('/api/kyc/upload', {
+                    method: 'POST',
+                    body: formData
+                });
 
-        if (!panNumber || panNumber.length !== 10 ||
-            !/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/.test(panNumber)) {
-            messageDiv.innerHTML =
-                '<div class="alert alert-error">❌ PAN must be in format: ABCDE1234F</div>';
-            return;
-        }
+                var data = await response.json();
 
-        if (!aadhaarFile) {
-            messageDiv.innerHTML =
-                '<div class="alert alert-error">❌ Please select Aadhaar document</div>';
-            return;
-        }
-
-        if (!panFile) {
-            messageDiv.innerHTML =
-                '<div class="alert alert-error">❌ Please select PAN document</div>';
-            return;
-        }
-
-        // Build form data
-        const formData = new FormData();
-        formData.append('aadhaarNumber', aadhaarNumber);
-        formData.append('panNumber', panNumber);
-        formData.append('aadhaarFile', aadhaarFile);
-        formData.append('panFile', panFile);
-
-        messageDiv.innerHTML =
-            '<div class="alert alert-info">⏳ Uploading documents...</div>';
-
-        // Get JWT from cookie for Authorization header
-        const jwt = getCookie('jwt');
-
-        fetch('/api/kyc/upload', {
-            method: 'POST',
-            headers: jwt ? {'Authorization': 'Bearer ' + jwt} : {},
-            body: formData
-        })
-            .then(response => response.json())
-            .then(data => {
-                if (data.kycId) {
-                    messageDiv.innerHTML =
-                        '<div class="alert alert-success">' +
-                        '✅ KYC uploaded successfully! Status: ' +
-                        data.status + '. Refreshing...</div>';
-                    setTimeout(() => location.reload(), 2000);
+                if (response.ok) {
+                    alert('✅ ' + data.message);
+                    window.location.reload();
                 } else {
-                    messageDiv.innerHTML =
-                        '<div class="alert alert-error">' +
-                        '❌ ' + (data.error || 'Upload failed. Try again.') +
-                        '</div>';
+                    alert('❌ Upload failed: ' + (data.error || 'Unknown error'));
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
                 }
-            })
-            .catch(error => {
-                messageDiv.innerHTML =
-                    '<div class="alert alert-error">' +
-                    '❌ Network error: ' + error.message + '</div>';
-            });
+            } catch (err) {
+                alert('❌ Something went wrong: ' + err.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = originalText;
+            }
+        });
     }
 </script>
 

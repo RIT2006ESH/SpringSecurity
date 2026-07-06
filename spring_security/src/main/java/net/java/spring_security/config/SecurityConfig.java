@@ -1,20 +1,25 @@
 package net.java.spring_security.config;
 
+import net.java.spring_security.security.CustomAuthenticationProvider;
 import net.java.spring_security.security.JwtAuthFilter;
+import net.java.spring_security.security.JwtService;
+import jakarta.servlet.http.Cookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.AuthenticationProvider;
-import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.authentication.CredentialsExpiredException;
+import org.springframework.security.authentication.LockedException;
+import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -24,19 +29,14 @@ public class SecurityConfig {
     private JwtAuthFilter jwtAuthFilter;
 
     @Autowired
-    private UserDetailsService userDetailsService;
+    private JwtService jwtService;
+
+    @Autowired
+    private CustomAuthenticationProvider customAuthenticationProvider;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
-    }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider() {
-        DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
-        provider.setUserDetailsService(userDetailsService);
-        provider.setPasswordEncoder(passwordEncoder());
-        return provider;
     }
 
     @Bean
@@ -109,6 +109,17 @@ public class SecurityConfig {
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .successHandler((request, response, authentication) -> {
+                            // Generate JWT for the authenticated user
+                            String jwt = jwtService.generateToken(
+                                    (UserDetails) authentication.getPrincipal());
+
+                            // Set it as a cookie so JwtAuthFilter can read it on future requests
+                            Cookie jwtCookie = new Cookie("jwt", jwt);
+                            jwtCookie.setHttpOnly(true);
+                            jwtCookie.setPath("/");
+                            jwtCookie.setMaxAge(24 * 60 * 60); // 1 day
+                            response.addCookie(jwtCookie);
+
                             String role = authentication.getAuthorities()
                                     .stream()
                                     .findFirst()
@@ -132,7 +143,18 @@ public class SecurityConfig {
                                     response.sendRedirect("/login?error");
                             }
                         })
-                        .failureUrl("/login?error")
+                        .failureHandler((request, response, exception) -> {
+                            // Give specific feedback for lockout/expiry vs generic bad credentials
+                            if (exception instanceof LockedException) {
+                                response.sendRedirect("/login?locked");
+                            } else if (exception instanceof CredentialsExpiredException) {
+                                response.sendRedirect("/login?expired");
+                            } else if (exception instanceof DisabledException) {
+                                response.sendRedirect("/login?disabled");
+                            } else {
+                                response.sendRedirect("/login?error");
+                            }
+                        })
                         .permitAll()
                 )
                 .exceptionHandling(ex -> ex
@@ -143,8 +165,7 @@ public class SecurityConfig {
                                     response.getWriter().write(
                                             "{\"error\":\"Unauthorized — please login\"}");
                                 },
-                                new org.springframework.security.web.util
-                                        .matcher.AntPathRequestMatcher("/api/**")
+                                new AntPathRequestMatcher("/api/**")
                         )
                 )
                 .logout(logout -> logout
@@ -153,7 +174,7 @@ public class SecurityConfig {
                         .logoutSuccessUrl("/login?logout")
                         .permitAll()
                 )
-                .authenticationProvider(authenticationProvider())
+                .authenticationProvider(customAuthenticationProvider)
                 .addFilterBefore(jwtAuthFilter,
                         UsernamePasswordAuthenticationFilter.class);
 

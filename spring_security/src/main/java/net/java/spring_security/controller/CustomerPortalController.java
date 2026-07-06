@@ -4,20 +4,21 @@ import net.java.spring_security.banking.model.Account;
 import net.java.spring_security.banking.model.Customer;
 import net.java.spring_security.banking.model.KycDocument;
 import net.java.spring_security.banking.model.Transaction;
-import net.java.spring_security.banking.repository.AccountRepository;
 import net.java.spring_security.banking.repository.CustomerRepository;
-import net.java.spring_security.banking.repository.KycDocumentRepository;
-import net.java.spring_security.banking.repository.TransactionRepository;
+import net.java.spring_security.banking.service.AccountService;
+import net.java.spring_security.banking.service.KycService;
+import net.java.spring_security.banking.service.TransactionService;
 import net.java.spring_security.model.User;
 import net.java.spring_security.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -33,67 +34,89 @@ public class CustomerPortalController {
     private CustomerRepository customerRepository;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @Autowired
-    private TransactionRepository transactionRepository;
+    private TransactionService transactionService;
 
     @Autowired
-    private KycDocumentRepository kycDocumentRepository;
+    private KycService kycService;
 
     @GetMapping("/dashboard")
-    public String customerDashboard(Model model) {
+    public String customerDashboard(Authentication authentication,
+                                    Model model) {
+        String email = authentication.getName();
 
-        // Step 1: Get logged in user's email from JWT
-        Authentication auth = SecurityContextHolder
-                .getContext().getAuthentication();
-        String email = auth.getName();
-
-        // Step 2: Load User from user_registration_db
+        // Step 1: Load user
         Optional<User> optionalUser = userRepository.findByEmail(email);
         if (optionalUser.isEmpty()) {
             model.addAttribute("errorMessage", "User not found");
             return "customer/dashboard";
         }
         User user = optionalUser.get();
+        model.addAttribute("user", user);
         model.addAttribute("accountStatus", user.getAccountStatus());
 
-        // Step 3: Find matching Customer in banking db by email
+        // Step 2: Load customer from banking DB
         List<Customer> customers = customerRepository.findByEmail(email);
-
         if (customers.isEmpty()) {
-            // User registered but no matching customer record in banking db
-            model.addAttribute("customer", null);
             model.addAttribute("accounts", new ArrayList<>());
             model.addAttribute("transactions", new ArrayList<>());
-            model.addAttribute("kyc", null);
             return "customer/dashboard";
         }
 
         Customer customer = customers.get(0);
         model.addAttribute("customer", customer);
 
-        // Step 4: Load accounts for this customer
-        List<Account> accounts = accountRepository
-                .findByCustomerId(customer.getCustomerId());
+        // Step 3: Load accounts
+        List<Account> accounts = accountService
+                .getAccountsByCustomerId(customer.getCustomerId());
         model.addAttribute("accounts", accounts);
 
-        // Step 5: Load transactions across all accounts
+        // Step 4: Load transactions
         List<Transaction> allTransactions = new ArrayList<>();
         for (Account account : accounts) {
-            List<Transaction> txns = transactionRepository
-                    .findByAccountNumber(account.getAccountNumber());
-            allTransactions.addAll(txns);
+            allTransactions.addAll(transactionService
+                    .getTransactionsByAccountNumber(
+                            account.getAccountNumber()));
         }
-        // Sort by most recent first
         allTransactions.sort((a, b) ->
                 b.getCreatedAt().compareTo(a.getCreatedAt()));
         model.addAttribute("transactions", allTransactions);
 
-        // Step 6: Load KYC document
-        Optional<KycDocument> kyc = kycDocumentRepository
-                .findByCustomerId(customer.getCustomerId());
-        model.addAttribute("kyc", kyc.orElse(null));
+        // Step 5: Load KYC and calculate status
+        Optional<KycDocument> kyc = kycService
+                .getKycByCustomerId(customer.getCustomerId());
+
+        if (kyc.isPresent()) {
+            model.addAttribute("kyc", kyc.get());
+
+            LocalDateTime submittedAt = kyc.get().getSubmittedAt();
+            LocalDateTime now = LocalDateTime.now();
+            long monthsAgo = ChronoUnit.MONTHS.between(submittedAt, now);
+
+            if (monthsAgo < 6) {
+                model.addAttribute("kycStatusColor", "green");
+                model.addAttribute("kycStatusMessage", "KYC Valid ✅");
+                model.addAttribute("kycExpired", false);
+            } else if (monthsAgo < 12) {
+                model.addAttribute("kycStatusColor", "yellow");
+                model.addAttribute("kycStatusMessage",
+                        "KYC Expiring Soon ⚠️");
+                model.addAttribute("kycExpired", false);
+            } else {
+                model.addAttribute("kycStatusColor", "red");
+                model.addAttribute("kycStatusMessage",
+                        "KYC Expired — Urgent Action Required 🔴");
+                model.addAttribute("kycExpired", true);
+            }
+        } else {
+            model.addAttribute("kyc", null);
+            model.addAttribute("kycStatusColor", "red");
+            model.addAttribute("kycStatusMessage",
+                    "KYC Not Submitted — Action Required 🔴");
+            model.addAttribute("kycExpired", true);
+        }
 
         return "customer/dashboard";
     }

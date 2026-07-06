@@ -11,7 +11,6 @@ public class RsaEncryptionService {
 
     private static KeyPair keyPair;
 
-    // Generate RSA key pair on startup
     static {
         try {
             KeyPairGenerator generator = KeyPairGenerator.getInstance("RSA");
@@ -22,7 +21,6 @@ public class RsaEncryptionService {
         }
     }
 
-    // ===== ENCRYPT =====
     public String encrypt(String plainText) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
@@ -34,7 +32,6 @@ public class RsaEncryptionService {
         }
     }
 
-    // ===== DECRYPT =====
     public String decrypt(String encryptedText) {
         try {
             Cipher cipher = Cipher.getInstance("RSA");
@@ -47,7 +44,6 @@ public class RsaEncryptionService {
         }
     }
 
-    // ===== GET PUBLIC KEY =====
     public String getPublicKey() {
         return Base64.getEncoder()
                 .encodeToString(keyPair.getPublic().getEncoded());

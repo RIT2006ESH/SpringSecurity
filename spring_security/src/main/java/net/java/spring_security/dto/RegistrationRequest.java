@@ -1,9 +1,11 @@
 package net.java.spring_security.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import net.java.spring_security.validation.NotCommonPassword;
 
 public class RegistrationRequest {
 
@@ -32,10 +34,17 @@ public class RegistrationRequest {
             "[A-Za-z\\d@$!%*?&]{8,}$",
             message = "Password must have uppercase, lowercase, " +
                     "number and special character")
+    @NotCommonPassword
     private String password;
 
+    @NotBlank(message = "Please confirm your password")
     private String confirmPassword;
 
+    // Class-level check so a mismatched confirm-password shows up as a
+    // normal @Valid field error instead of a runtime exception later
+    // in UserService. Bean Validation calls this via the getter name
+    // (isPasswordMatching -> "passwordMatching").
+    @AssertTrue(message = "Passwords do not match")
     public boolean isPasswordMatching() {
         return password != null && password.equals(confirmPassword);
     }

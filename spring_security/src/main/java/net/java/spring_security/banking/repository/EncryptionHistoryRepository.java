@@ -1,6 +1,7 @@
 package net.java.spring_security.banking.repository;
 
 import net.java.spring_security.banking.model.EncryptionHistory;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -18,7 +19,7 @@ public interface EncryptionHistoryRepository
             "ORDER BY e.performedAt DESC")
     List<EncryptionHistory> findLast3ByCustomerId(
             @Param("customerId") Integer customerId,
-            org.springframework.data.domain.Pageable pageable);
+            Pageable pageable);
 
     List<EncryptionHistory> findByCustomerIdOrderByPerformedAtDesc(
             Integer customerId);

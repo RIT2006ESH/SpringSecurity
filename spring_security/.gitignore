@@ -31,3 +31,16 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Security — never commit these ###
+# RSA private/public key files — the private key can decrypt all
+# Aadhaar/PAN/KYC data. If this leaks, all encrypted data is compromised.
+rsa-keys/
+
+# Uploaded KYC documents (encrypted at rest, but still shouldn't live in git)
+uploads/
+
+# Any local secrets/env files
+.env
+application-local.properties
+application-secrets.properties

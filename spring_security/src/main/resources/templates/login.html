@@ -22,6 +22,21 @@
             ⚠️ Invalid email or password. Please try again.
         </div>
 
+        <div th:if="${param.locked}" class="alert alert-error">
+            🔒 Your account has been temporarily locked due to multiple
+            failed login attempts. Please try again in 15 minutes.
+        </div>
+
+        <div th:if="${param.expired}" class="alert alert-error">
+            ⏰ Your password has expired. Please reset your password
+            to continue, or contact support for assistance.
+        </div>
+
+        <div th:if="${param.disabled}" class="alert alert-error">
+            🚫 Your account is not yet active. Please verify your email
+            and wait for manager approval before logging in.
+        </div>
+
         <div th:if="${param.logout}" class="alert alert-success">
             ✅ You have been logged out successfully.
         </div>
