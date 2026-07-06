@@ -15,13 +15,17 @@ pipeline {
 
         stage('Build') {
             steps {
-                bat 'mvn clean install -DskipTests'
+                dir('spring_security') {
+                    bat 'mvn clean install -DskipTests'
+                }
             }
         }
 
         stage('Test') {
             steps {
-                bat 'mvn test'
+                dir('spring_security') {
+                    bat 'mvn test'
+                }
             }
         }
     }
