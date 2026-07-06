@@ -34,10 +34,10 @@ public class SecurityConfig {
     @Autowired
     private CustomAuthenticationProvider customAuthenticationProvider;
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+//    @Bean
+//    public PasswordEncoder passwordEncoder() {
+//        return new BCryptPasswordEncoder();
+//    }
 
     @Bean
     public AuthenticationManager authenticationManager(

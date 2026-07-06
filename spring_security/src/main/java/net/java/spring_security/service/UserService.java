@@ -106,7 +106,6 @@ public class UserService {
 
         return true;
     }
-
     /**
      * Changes a user's password after checking it isn't one of their
      * last PASSWORD_HISTORY_LIMIT passwords (CERT-In password history rule).
