@@ -8,6 +8,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 
@@ -84,7 +85,22 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
         List<GrantedAuthority> authorities =
                 List.of(new SimpleGrantedAuthority(user.getRole()));
 
-        return new UsernamePasswordAuthenticationToken(email, rawPassword, authorities);
+        // IMPORTANT: principal must be a UserDetails object, not a plain
+        // String — SecurityConfig's successHandler casts
+        // authentication.getPrincipal() to UserDetails when generating
+        // the JWT. Returning a raw email string here caused a
+        // ClassCastException at login.
+        UserDetails principal = new org.springframework.security.core.userdetails.User(
+                user.getEmail(),
+                user.getPassword(),
+                user.isEnabled(),
+                true,  // accountNonExpired
+                true,  // credentialsNonExpired (already checked above)
+                true,  // accountNonLocked (already checked above)
+                authorities
+        );
+
+        return new UsernamePasswordAuthenticationToken(principal, rawPassword, authorities);
     }
 
     private void registerFailedAttempt(User user) {
